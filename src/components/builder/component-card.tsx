@@ -1,6 +1,6 @@
 import { Component } from '@/lib/types/component';
 import { cn } from '@/lib/utils';
-import { Crosshair, Plus } from 'lucide-react';
+import { Crosshair, Plus, TextIcon, Image as ImageIcon } from 'lucide-react';
 import React from 'react'
 
 export default function ComponentCard({
@@ -32,9 +32,14 @@ export default function ComponentCard({
       <div className="flex justify-between items-center">
 
         <span className={cn(
-          'text-[11px] font-semibold text-muted-foreground uppercase',
+          'text-[11px] font-semibold text-muted-foreground uppercase flex justify-start items-center gap-2',
           isSelected ? 'text-accent-foreground' : 'text-muted-foreground'
         )}>
+          {
+            component.name == "Text"
+            ? <TextIcon/>
+            : <ImageIcon />
+          }
           {component.name}
         </span>
 
