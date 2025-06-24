@@ -21,8 +21,21 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NextJS Website Builder by Mounir Remache",
-  description: "Build a React website builder for a coding challenge",
+  authors: [{ name: "Mounir Remache", url: "https://remachemounir.com" }],
+  title: {
+    default: "Website Builder",
+    template: "%s | Website Builder",
+  },
+  description: "Build a React/NextJS website builder for a coding challenge",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any", type: "image/x-icon" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
+  manifest: "/site.webmanifest",
 };
 
 export default async function RootLayout({
