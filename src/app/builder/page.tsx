@@ -21,7 +21,8 @@ export default function BuilderPage() {
         url: {
           label: 'URL',
           type: 'string',
-          default: 'https://placehold.co/600x400',
+          default: '/placeholder.png',
+          //default: 'https://placehold.co/600x400',
         },
         sizing: {
           label: 'Sizing',
@@ -41,23 +42,28 @@ export default function BuilderPage() {
       props: { markdown: '## Hello, canvas!' },
       width: 6,
       height: 1,
+      x:1,
+      y:1
     },
     {
       id: 'el2',
       type: 'Image',
       props: {
-        url: 'https://placehold.co/400x300',
-        sizing: 'Cover',
+        //url: 'https://placehold.co/400x300',
+        url: '/placeholder.png',
+        sizing: 'Contain',
       },
       width: 6,
       height: 3,
+      x:7,
+      y:1
     },
   ];
 
   return (
     <BuilderView
       components={components}
-      elements={elements}
+      initialElements={elements}
     />
 
   )

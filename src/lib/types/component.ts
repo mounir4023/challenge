@@ -22,4 +22,6 @@ export interface Element {
   // Canvas layout info (not part of the component definition)
   width: number;  // how many columns to span
   height: number; // how many rows to span
+  x: number;    // grid column start (1–12)
+  y: number;    // grid row start (1+)
 }

@@ -1,18 +1,18 @@
 'use client'
 
-import BuilderCanvas from '@/components/builder/builder-canvas'
+import BuilderCanvas, { getBestFitSize  } from '@/components/builder/builder-canvas'
 import ComponentsPanel from '@/components/builder/components-panel'
 import { Component, Element } from '@/lib/types/component';
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button';
 import { MenuIcon } from 'lucide-react';
 
 export default function BuilderView({
   components,
-  elements,
+  initialElements,
 }: {
   components: Component[];
-  elements: Element[];
+  initialElements: Element[];
 }) {
 
   // Components selection
@@ -20,17 +20,71 @@ export default function BuilderView({
   const [selectedComponent, setSelectedComponent] = useState<Component | null>(null);
   const handleSelectComponent = useCallback((component: Component) => {
     setSelectedComponent(component);
+    setSelectedElement(null);
   }, []);
+
+  // Element placement
+  const [elements, setElements] = useState<Element[]>(initialElements)
+  const handleAddElement = (col: number, row: number) => {
+
+    if (!selectedComponent) return
+
+    const maxWidth = 3
+    const maxHeight = 2
+
+    // Can't place here
+    const best = getBestFitSize(col, row, maxWidth, maxHeight, elements)
+    if (!best) return
+
+    // Build new element
+    const defaultProps: Record<string, unknown> = {}
+    for (const [key, def] of Object.entries(selectedComponent.props)) {
+      defaultProps[key] = def.default
+    }
+
+    const newElement: Element = {
+      id: crypto.randomUUID(),
+      type: selectedComponent.name,
+      props: defaultProps,
+      width: best.width,
+      height: best.height,
+      x: col,
+      y: row,
+    }
+
+    setElements(prev => [...prev, newElement])
+    setSelectedComponent(null)
+  }
 
   // Element Selection
   const [selectedElement, setSelectedElement] = useState<Element | null>(null);
   const handleSelectElement = useCallback((element: Element) => {
     setSelectedElement(element);
+    setSelectedComponent(null)
   }, []);
 
+  // Reset mode
+  function resetMode() {
+    setSelectedComponent(null)
+    setSelectedElement(null)
+  }
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        resetMode()
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedComponent, selectedElement]);
 
   return (
-    <div className='h-full w-full overflow-hidden relative flex justify-start items-stretch'>
+    <div
+      className='h-full w-full overflow-hidden relative flex justify-start items-stretch'
+      onClick={(e) => {
+        if (!e.defaultPrevented) resetMode();
+      }}
+    >
 
 
       {/* Backdrop area behind the components panel on small screens to dismiss panel */}
@@ -84,7 +138,10 @@ export default function BuilderView({
         elements={elements}
         onSelectElement={handleSelectElement}
         selectedElement={selectedElement}
+        isPlacing={selectedComponent !== null}
+        onAddElementAtCell={handleAddElement}
       />
+
 
     </div>
   )

@@ -15,9 +15,13 @@ export default function ComponentCard({
   return (
 
     <div
-      onClick={onClick}
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onClick()
+      }}
       className={cn(
-        'cursor-pointer rounded-lg py-4 px-4 text-[11px]',
+        'cursor-pointer rounded-lg py-4 px-4 text-[11px] border-1',
         'group',
         isSelected
           ? 'border-border bg-accent'
