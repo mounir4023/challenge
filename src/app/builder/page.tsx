@@ -1,5 +1,6 @@
 import BuilderView from '@/components/builder/view';
 import { Component, Element } from '@/lib/types/component';
+import { FloatNav } from '@/components/app/float-nav'
 
 export default function BuilderPage() {
 
@@ -61,10 +62,12 @@ export default function BuilderPage() {
   ];
 
   return (
-    <BuilderView
-      components={components}
-      initialElements={elements}
-    />
+    <>
+      <BuilderView
+        components={components}
+        initialElements={elements} />
 
+      <FloatNav />
+    </>
   )
 }
