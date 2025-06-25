@@ -95,8 +95,8 @@ export default function BuilderView({
     //setSelectedElement(null);
   }
 
-  // Element resizing
-  function handleResizeElement(updated: Element) {
+  // Element resizing and updating
+  function handleUpdateElement(updated: Element) {
     setElements(prev =>
       prev.map(el => (el.id === updated.id ? updated : el))
     );
@@ -161,13 +161,14 @@ export default function BuilderView({
       {/* Page elements canvas */}
       <BuilderCanvas
         elements={elements}
+        components={components}
         onSelectElement={handleSelectElement}
         selectedElement={selectedElement}
         isPlacing={selectedComponent !== null}
         onAddElementAtCell={handleAddElement}
         isMoving={isMoving}
         onMoveElementToCell={handleMoveElement}
-        onResizeElement={handleResizeElement}
+        onUpdateElement={handleUpdateElement}
       />
 
 

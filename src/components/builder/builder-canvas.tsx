@@ -1,27 +1,30 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useEffect, useState } from 'react'
-import { Element } from '@/lib/types/component'
+import { Component, Element } from '@/lib/types/component'
 import { cn } from '@/lib/utils'
-import { Scaling } from 'lucide-react'
+import { Scaling, Settings } from 'lucide-react'
+import ElementDialog from './element-dialog'
 
 export default function BuilderCanvas({
   elements,
+  components,
   onSelectElement,
   selectedElement,
   isPlacing,
   onAddElementAtCell,
   isMoving,
   onMoveElementToCell,
-  onResizeElement
+  onUpdateElement
 }: {
   elements: Element[]
+  components: Component[]
   onSelectElement: (element: Element) => void
   selectedElement: Element | null
   isPlacing: boolean
   onAddElementAtCell: (col: number, row: number) => void
   isMoving: boolean
   onMoveElementToCell: (col: number, row: number) => void
-  onResizeElement: (element: Element) => void
+  onUpdateElement: (element: Element) => void
 }) {
 
   // Grid setup
@@ -31,6 +34,15 @@ export default function BuilderCanvas({
   const NUM_COLS = 12
 
   const occupiedCells = getOccupiedCells(elements);
+
+  // Element editing
+  const [editingElement, setEditingElement] = useState<Element | null>(null)
+  const handleEditElement = (el: Element | null) => {
+    if (el) {
+      onUpdateElement(el);
+    }
+    setEditingElement(null);
+  }
 
   // Element resizing
   const [resizeTarget, setResizeTarget] = useState<{
@@ -97,7 +109,7 @@ export default function BuilderCanvas({
       if (resizingPreview && resizingPreview.valid) {
         const element = elements.find(el => el.id === resizeTarget?.id);
         if (element) {
-          onResizeElement({
+          onUpdateElement({
             ...element,
             width: resizingPreview.width,
             height: resizingPreview.height,
@@ -118,7 +130,7 @@ export default function BuilderCanvas({
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     };
-  }, [resizeTarget, resizingPreview, elements, onResizeElement]);
+  }, [resizeTarget, resizingPreview, elements, onUpdateElement]);
 
   return (
     <div className="p-4 w-full relative overflow-y-auto">
@@ -225,6 +237,20 @@ export default function BuilderCanvas({
                 {/* Render element */}
                 {renderElementContent(el)}
 
+                {/* Edit element props */}
+                {isSelected && (
+                  <div
+                    className="absolute top-1 right-1 p-1 bg-ring rounded-sm cursor-pointer z-20"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setEditingElement(el)
+                    }}
+                  >
+                    <Settings className="size-6 text-muted"/>
+                  </div>
+                )}
+
                 {/* Resize triggers */}
                 {isSelected && (
                   <div
@@ -243,6 +269,14 @@ export default function BuilderCanvas({
             )
           })}
         </div>
+
+        {/* Edit element dialog*/}
+        <ElementDialog
+          editingElement={editingElement}
+          setEditingElement={handleEditElement}
+          component={components.find(c => c.name === editingElement?.type)}
+        />
+
 
       </div>
     </div>
