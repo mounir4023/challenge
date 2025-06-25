@@ -184,20 +184,6 @@ export default function BuilderCanvas({
                 }}
               />
             )}
-            {/*
-            {resizingPreview && (
-              <div
-                className={cn(
-                  'z-30 bg-info border border-dashed',
-                  resizingPreview.valid ? 'border-primary' : 'border-destructive'
-                )}
-                style={{
-                  gridColumn: `${resizingPreview.x} / span ${resizingPreview.width}`,
-                  gridRow: `${resizingPreview.y} / span ${resizingPreview.height}`,
-                }}
-              />
-            )}
-            */}
 
           </div>
         )}

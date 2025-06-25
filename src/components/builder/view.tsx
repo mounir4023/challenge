@@ -92,7 +92,7 @@ export default function BuilderView({
 
     const moved = { ...selectedElement, x: col, y: row, width: best.width, height: best.height };
     setElements(prev => prev.map(e => e.id === moved.id ? moved : e));
-    setSelectedElement(null);
+    //setSelectedElement(null);
   }
 
   // Element resizing
@@ -100,6 +100,7 @@ export default function BuilderView({
     setElements(prev =>
       prev.map(el => (el.id === updated.id ? updated : el))
     );
+    setSelectedElement(updated);
   }
 
   return (
