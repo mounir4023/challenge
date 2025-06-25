@@ -9,12 +9,16 @@ export default function BuilderCanvas({
   selectedElement,
   isPlacing,
   onAddElementAtCell,
+  isMoving,
+  onMoveElementToCell
 }: {
   elements: Element[]
   onSelectElement: (element: Element) => void
   selectedElement: Element | null
   isPlacing: boolean
   onAddElementAtCell: (col: number, row: number) => void
+  isMoving: boolean
+  onMoveElementToCell: (col: number, row: number) => void
 }) {
 
   const maxY = elements.reduce((max, el) => Math.max(max, el.y + el.height - 1), 0);
@@ -28,7 +32,7 @@ export default function BuilderCanvas({
       <div className="relative">
 
         {/* Interactive Grid Layer (when placing a new component) */}
-        {isPlacing && (
+        { (isPlacing || isMoving) && (
           <div
             className="absolute inset-0 z-10 grid gap-2"
             style={{
@@ -38,24 +42,33 @@ export default function BuilderCanvas({
             }}
           >
             {Array.from({ length: NUM_COLS * NUM_ROWS }).map((_, idx) => {
+
               const col = (idx % NUM_COLS) + 1
               const row = Math.floor(idx / NUM_COLS) + 1
-              const isOccupied = occupiedCells.has(`${col},${row}`);
+
+              const isValid =
+                isPlacing
+                  ? !occupiedCells.has(`${col},${row}`)
+                  : isMoving
+                    ? canPlaceElementAt(col, row, selectedElement?.width ?? 1, selectedElement?.height ?? 1, elements.filter(e => e.id !== selectedElement?.id))
+                    : false;
+
+              const isInteractive = isPlacing || isMoving;
 
               return (
                 <div
                   key={`${col}-${row}`}
                   className={cn(
                     "border border-dashed border-muted",
-                    isOccupied
-                      ? 'hover:bg-destructive hover:opacity-25 cursor-not-allowed'
-                      : 'hover:bg-accent hover:opacity-50 cursor-pointer'
+                    isInteractive && !isValid && 'hover:bg-destructive hover:opacity-25 cursor-not-allowed',
+                    isInteractive && isValid && 'hover:bg-accent hover:opacity-50 cursor-pointer'
                   )}
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
-                    if (!isOccupied) onAddElementAtCell(col, row)}
-                  }
+                    if (isPlacing && isValid) onAddElementAtCell(col, row)
+                    if (isMoving && isValid) onMoveElementToCell(col, row)
+                  }}
                 />
               )
             })}
@@ -84,8 +97,8 @@ export default function BuilderCanvas({
                   'p-2 rounded-md border text-sm transition-colors cursor-pointer',
                   'bg-card border-border',
                   isSelected
-                    ? 'ring-2 ring-ring bg-accent text-accent-foreground'
-                    : 'hover:bg-accent/40'
+                    ? 'ring-2 ring-ring bg-accent text-accent-foreground cursor-move'
+                    : 'hover:bg-accent/40 cursor-pointer'
                 )}
                 style={{
                   gridColumn: `${el.x} / span ${el.width}`,

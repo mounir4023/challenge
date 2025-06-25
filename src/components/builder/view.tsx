@@ -78,6 +78,23 @@ export default function BuilderView({
     return () => window.removeEventListener('keydown', handleKey);
   }, [selectedComponent, selectedElement]);
 
+  // Element moving
+  const isMoving = selectedElement !== null && selectedComponent === null;
+  const handleMoveElement = (col: number, row: number) => {
+    if (!selectedElement) return;
+    const best = getBestFitSize(
+      col, row,
+      selectedElement.width,
+      selectedElement.height,
+      elements.filter(e => e.id !== selectedElement.id) // exclude self
+    );
+    if (!best) return;
+
+    const moved = { ...selectedElement, x: col, y: row, width: best.width, height: best.height };
+    setElements(prev => prev.map(e => e.id === moved.id ? moved : e));
+    setSelectedElement(null);
+  }
+
   return (
     <div
       className='h-full w-full overflow-hidden relative flex justify-start items-stretch'
@@ -140,6 +157,8 @@ export default function BuilderView({
         selectedElement={selectedElement}
         isPlacing={selectedComponent !== null}
         onAddElementAtCell={handleAddElement}
+        isMoving={isMoving}
+        onMoveElementToCell={handleMoveElement}
       />
 
 
