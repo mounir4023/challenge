@@ -15,6 +15,24 @@ export default function BuilderView({
   initialElements: Element[];
 }) {
 
+  // Elements persistent store
+  const [elements, setElements] = useState<Element[]>(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('canvas-elements');
+      if (stored) {
+        try {
+          return JSON.parse(stored);
+        } catch {
+          return initialElements;
+        }
+      }
+    }
+    return initialElements;
+  });
+  useEffect(() => {
+    localStorage.setItem('canvas-elements', JSON.stringify(elements));
+  }, [elements]);
+
   // Components selection
   const [isComponentsPanelOpen, setIsComponentsPanelOpen] = useState(false);
   const [selectedComponent, setSelectedComponent] = useState<Component | null>(null);
@@ -24,7 +42,6 @@ export default function BuilderView({
   }, []);
 
   // Element placement
-  const [elements, setElements] = useState<Element[]>(initialElements)
   const handleAddElement = (col: number, row: number) => {
 
     if (!selectedComponent) return
@@ -103,6 +120,12 @@ export default function BuilderView({
     setSelectedElement(updated);
   }
 
+  // Element deleting
+  function handleDeleteElement(id: string) {
+    setElements((prev) => prev.filter((el) => el.id !== id));
+    setSelectedElement(null);
+  }
+
   return (
     <div
       className='h-full w-full overflow-hidden relative flex justify-start items-stretch'
@@ -169,6 +192,7 @@ export default function BuilderView({
         isMoving={isMoving}
         onMoveElementToCell={handleMoveElement}
         onUpdateElement={handleUpdateElement}
+        onDeleteElement={handleDeleteElement}
       />
 
 

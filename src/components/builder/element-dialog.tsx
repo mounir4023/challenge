@@ -16,10 +16,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 export default function ElementDialog({
   editingElement,
   component,
+  onDeleteElement,
   setEditingElement,
 }: {
   editingElement: Element | null;
   component: Component | undefined;
+  onDeleteElement?: (id: string) => void;
   setEditingElement: (el: Element | null) => void;
 }) {
   const [formValues, setFormValues] = useState<Record<string, unknown>>({});
@@ -110,6 +112,18 @@ export default function ElementDialog({
 
         <DialogFooter>
           <Button
+            className='cursor-pointer'
+            variant="destructive"
+            onClick={() => {
+              onDeleteElement?.(editingElement.id);
+              setEditingElement(null);
+            }}
+          >
+            Delete
+          </Button>
+          <div className="flex-1"></div>
+          <Button
+            className='cursor-pointer'
             variant="outline"
             onClick={() => {
               setEditingElement(null);
@@ -118,6 +132,7 @@ export default function ElementDialog({
             Cancel
           </Button>
           <Button
+            className='cursor-pointer'
             onClick={() => {
               setEditingElement({
                 ...editingElement,

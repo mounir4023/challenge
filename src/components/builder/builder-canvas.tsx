@@ -14,7 +14,8 @@ export default function BuilderCanvas({
   onAddElementAtCell,
   isMoving,
   onMoveElementToCell,
-  onUpdateElement
+  onUpdateElement,
+  onDeleteElement
 }: {
   elements: Element[]
   components: Component[]
@@ -25,6 +26,7 @@ export default function BuilderCanvas({
   isMoving: boolean
   onMoveElementToCell: (col: number, row: number) => void
   onUpdateElement: (element: Element) => void
+  onDeleteElement: (id: string) => void;
 }) {
 
   // Grid setup
@@ -41,6 +43,12 @@ export default function BuilderCanvas({
     if (el) {
       onUpdateElement(el);
     }
+    setEditingElement(null);
+  }
+
+  // Element deleting
+  const handleDeleteElement = (id: string ) => {
+    onDeleteElement(id);
     setEditingElement(null);
   }
 
@@ -273,6 +281,7 @@ export default function BuilderCanvas({
         {/* Edit element dialog*/}
         <ElementDialog
           editingElement={editingElement}
+          onDeleteElement={handleDeleteElement}
           setEditingElement={handleEditElement}
           component={components.find(c => c.name === editingElement?.type)}
         />
