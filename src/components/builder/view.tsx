@@ -95,6 +95,13 @@ export default function BuilderView({
     setSelectedElement(null);
   }
 
+  // Element resizing
+  function handleResizeElement(updated: Element) {
+    setElements(prev =>
+      prev.map(el => (el.id === updated.id ? updated : el))
+    );
+  }
+
   return (
     <div
       className='h-full w-full overflow-hidden relative flex justify-start items-stretch'
@@ -159,6 +166,7 @@ export default function BuilderView({
         onAddElementAtCell={handleAddElement}
         isMoving={isMoving}
         onMoveElementToCell={handleMoveElement}
+        onResizeElement={handleResizeElement}
       />
 
 

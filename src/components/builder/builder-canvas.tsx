@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Element } from '@/lib/types/component'
 import { cn } from '@/lib/utils'
+import { Scaling } from 'lucide-react'
 
 export default function BuilderCanvas({
   elements,
@@ -10,7 +11,8 @@ export default function BuilderCanvas({
   isPlacing,
   onAddElementAtCell,
   isMoving,
-  onMoveElementToCell
+  onMoveElementToCell,
+  onResizeElement
 }: {
   elements: Element[]
   onSelectElement: (element: Element) => void
@@ -19,17 +21,108 @@ export default function BuilderCanvas({
   onAddElementAtCell: (col: number, row: number) => void
   isMoving: boolean
   onMoveElementToCell: (col: number, row: number) => void
+  onResizeElement: (element: Element) => void
 }) {
 
+  // Grid setup
+  const canvasRef = React.useRef<HTMLDivElement>(null);
   const maxY = elements.reduce((max, el) => Math.max(max, el.y + el.height - 1), 0);
-  const NUM_ROWS = maxY + 2; // Add 4 rows of "headroom"
+  const NUM_ROWS = maxY + 4; // Add 4 rows of "headroom"
   const NUM_COLS = 12
 
   const occupiedCells = getOccupiedCells(elements);
 
+  // Element resizing
+  const [resizeTarget, setResizeTarget] = useState<{
+    id: string;
+    baseWidth: number;
+    baseHeight: number;
+    startX: number;
+    startY: number;
+  } | null>(null);
+  function startResizing(el: Element, mouseX: number, mouseY: number) {
+    setResizeTarget({
+      id: el.id,
+      baseWidth: el.width,
+      baseHeight: el.height,
+      startX: mouseX,
+      startY: mouseY,
+    });
+  }
+  const [resizingPreview, setResizingPreview] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    valid: boolean;
+  } | null>(null);
+  useEffect(() => {
+    if (!resizeTarget) return;
+
+    function onMove(e: MouseEvent) {
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (!canvasRect) return;
+
+      const relX = e.clientX - canvasRect.left;
+      const relY = e.clientY - canvasRect.top;
+
+      const col = Math.floor(relX / 80) + 1;
+      const row = Math.floor(relY / 80) + 1;
+
+      const element = elements.find(el => el.id === resizeTarget?.id);
+      if (!element) return;
+
+      const newWidth = Math.max(1, col - element.x + 1);
+      const newHeight = Math.max(1, row - element.y + 1);
+
+      const valid = canPlaceElementAt(
+        element.x,
+        element.y,
+        newWidth,
+        newHeight,
+        elements.filter(e => e.id !== element.id)
+      );
+
+      setResizingPreview({
+        x: element.x,
+        y: element.y,
+        width: newWidth,
+        height: newHeight,
+        valid,
+      });
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    function onUp(e: MouseEvent) {
+      if (resizingPreview && resizingPreview.valid) {
+        const element = elements.find(el => el.id === resizeTarget?.id);
+        if (element) {
+          onResizeElement({
+            ...element,
+            width: resizingPreview.width,
+            height: resizingPreview.height,
+          });
+        }
+      }
+
+      setResizingPreview(null);
+      setResizeTarget(null);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    }
+
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, [resizeTarget, resizingPreview, elements, onResizeElement]);
+
   return (
     <div className="p-4 w-full relative overflow-y-auto">
-      <div className="relative">
+      <div ref={canvasRef} className="relative">
 
         {/* Interactive Grid Layer (when placing a new component) */}
         { (isPlacing || isMoving) && (
@@ -41,6 +134,7 @@ export default function BuilderCanvas({
               pointerEvents: 'auto',
             }}
           >
+            {/* Grid cells listening to placement events */}
             {Array.from({ length: NUM_COLS * NUM_ROWS }).map((_, idx) => {
 
               const col = (idx % NUM_COLS) + 1
@@ -50,8 +144,10 @@ export default function BuilderCanvas({
                 isPlacing
                   ? !occupiedCells.has(`${col},${row}`)
                   : isMoving
-                    ? canPlaceElementAt(col, row, selectedElement?.width ?? 1, selectedElement?.height ?? 1, elements.filter(e => e.id !== selectedElement?.id))
-                    : false;
+                    ? resizeTarget && resizingPreview
+                      ? resizingPreview.valid
+                      : canPlaceElementAt(col, row, selectedElement?.width ?? 1, selectedElement?.height ?? 1, elements.filter(e => e.id !== selectedElement?.id))
+                  : false;
 
               const isInteractive = isPlacing || isMoving;
 
@@ -72,6 +168,37 @@ export default function BuilderCanvas({
                 />
               )
             })}
+
+            {/* Resized element preview */}
+            {resizingPreview && (
+              <div
+                className={cn(
+                  'z-30 border border-dashed rounded-sm',
+                  resizingPreview.valid
+                    ? 'border-info bg-info opacity-30'
+                    : 'border-destructive bg-destructive opacity-10'
+                )}
+                style={{
+                  gridColumn: `${resizingPreview.x} / span ${resizingPreview.width}`,
+                  gridRow: `${resizingPreview.y} / span ${resizingPreview.height}`,
+                }}
+              />
+            )}
+            {/*
+            {resizingPreview && (
+              <div
+                className={cn(
+                  'z-30 bg-info border border-dashed',
+                  resizingPreview.valid ? 'border-primary' : 'border-destructive'
+                )}
+                style={{
+                  gridColumn: `${resizingPreview.x} / span ${resizingPreview.width}`,
+                  gridRow: `${resizingPreview.y} / span ${resizingPreview.height}`,
+                }}
+              />
+            )}
+            */}
+
           </div>
         )}
 
@@ -83,6 +210,8 @@ export default function BuilderCanvas({
             gridAutoRows: '80px',
           }}
         >
+
+          {/* Element cards */}
           {elements.map(el => {
             const isSelected = selectedElement?.id === el.id
             return (
@@ -94,6 +223,7 @@ export default function BuilderCanvas({
                   onSelectElement(el)
                 }}
                 className={cn(
+                  'relative',
                   'p-2 rounded-md border text-sm transition-colors cursor-pointer',
                   'bg-card border-border',
                   isSelected
@@ -105,7 +235,24 @@ export default function BuilderCanvas({
                   gridRow: `${el.y} / span ${el.height}`,
                 }}
               >
+
+                {/* Render element */}
                 {renderElementContent(el)}
+
+                {/* Resize triggers */}
+                {isSelected && (
+                  <div
+                    className="absolute bottom-1 right-1 p-1 bg-ring rounded-sm cursor-resize z-20"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      startResizing(el, e.clientX, e.clientY);
+                    }}
+                  >
+                    <Scaling className="size-6 text-muted"/>
+                  </div>
+                )}
+
               </div>
             )
           })}
