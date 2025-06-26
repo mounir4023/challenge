@@ -14,6 +14,7 @@
   /* Fonts */
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-proxima: var(--font-proxima);
 
   /* Sidebar-specific tokens */
   --color-sidebar-ring: var(--sidebar-ring);
@@ -194,6 +195,23 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+  }
+  .prose h1 {
+    font-weight: 800;
+    font-size: xx-large;
+    text-transform: uppercase;
+  }
+  .prose h2,
+  .prose h3 {
+    font-weight: 700;
+    font-size: larger;
+    text-transform: capitalize;
+  }
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    font-weight: 500;
+    font-size: large;
   }
 }
 

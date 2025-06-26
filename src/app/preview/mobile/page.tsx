@@ -23,7 +23,7 @@ export default function MobilePreviewPage() {
   }, [])
 
   return (
-    <div className="max-h-screen bg-background p-4 flex justify-center overflow-y-auto">
+    <div className="max-h-screen bg-background p-4 flex justify-center overflow-y-auto font-proxima">
         <div className="w-full max-w-md space-y-4">
         {elements.map((el) => {
             const { id, type, props } = el

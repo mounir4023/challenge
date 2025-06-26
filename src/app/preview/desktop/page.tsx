@@ -31,7 +31,7 @@ export default function DesktopPreviewPage() {
   */
 
   return (
-    <div className="max-h-screen bg-background p-4 overflow-y-auto">
+    <div className="max-h-screen bg-background p-4 overflow-y-auto font-proxima">
       <div
         className="grid gap-2 grid-cols-12 pb-20"
         style={{ gridAutoRows: '80px' }}

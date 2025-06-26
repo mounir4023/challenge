@@ -20,6 +20,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import localFont from 'next/font/local'
+export const proximaNovaExtraCondensed = localFont({
+  src: [
+    { path: '../../public/fonts/ProximaNovaExCn-Light.woff2', weight: '300', style: 'normal' },
+    { path: '../../public/fonts/ProximaNovaExCn-LightIt.woff2', weight: '300', style: 'italic' },
+    { path: '../../public/fonts/ProximaNovaExCn-Regular.woff2', weight: '400', style: 'normal' },
+    { path: '../../public/fonts/ProximaNovaExCn-RegularIt.woff2', weight: '400', style: 'italic' },
+    { path: '../../public/fonts/ProximaNovaExCn-Semibold.woff2', weight: '600', style: 'normal' },
+    { path: '../../public/fonts/ProximaNovaExCn-SemiboldIt.woff2', weight: '600', style: 'italic' },
+    { path: '../../public/fonts/ProximaNovaExCn-Bold.woff2', weight: '700', style: 'normal' },
+    { path: '../../public/fonts/ProximaNovaExCn-BoldIt.woff2', weight: '700', style: 'italic' },
+    { path: '../../public/fonts/ProximaNovaExCn-Black.woff2', weight: '900', style: 'normal' },
+    { path: '../../public/fonts/ProximaNovaExCn-BlackIt.woff2', weight: '900', style: 'italic' },
+  ],
+  display: 'swap',
+  variable: '--font-proxima',
+})
+
 export const metadata: Metadata = {
   authors: [{ name: "Mounir Remache", url: "https://remachemounir.com" }],
   title: {
@@ -50,7 +68,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased inset-0 min-h-dvh`}
+        className={`${geistSans.variable} ${geistMono.variable} ${proximaNovaExtraCondensed.variable} antialiased inset-0 min-h-dvh`}
       >
 
         <ThemeProvider
