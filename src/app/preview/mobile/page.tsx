@@ -25,32 +25,33 @@ export default function MobilePreviewPage() {
   return (
     <div className="max-h-screen bg-background p-4 flex justify-center overflow-y-auto font-proxima">
         <div className="w-full max-w-md space-y-4">
-        {elements.map((el) => {
-            const { id, type, props } = el
+          {elements.map((el) => {
+              const { id, type, props } = el
 
-            return (
-            <div key={id} className="w-full">
-                {type === 'Text' && (
-                <div className="prose prose-sm max-w-none">
-                    <ReactMarkdown>{String(props.markdown || '')}</ReactMarkdown>
-                </div>
-                )}
+              return (
+              <div key={id} className="w-full">
+                  {type === 'Text' && (
+                  <div className="prose prose-sm max-w-none">
+                      <ReactMarkdown>{String(props.markdown || '')}</ReactMarkdown>
+                  </div>
+                  )}
 
-                {type === 'Image' && (
-                <img
-                    src={props.url as string}
-                    className="w-full h-auto object-contain"
-                    style={{
-                    objectFit: props.sizing === 'Cover' ? 'cover' : 'contain',
-                    }}
-                    alt="element"
-                />
-                )}
-            </div>
-            )
-        })}
+                  {type === 'Image' && (
+                  <img
+                      src={props.url as string}
+                      className="w-full h-auto object-contain"
+                      style={{
+                      objectFit: props.sizing === 'Cover' ? 'cover' : 'contain',
+                      }}
+                      alt="element"
+                  />
+                  )}
+              </div>
+              )
+          })}
 
-        <FloatNav />
+          <FloatNav />
+          <div className="h-20"></div>
         </div>
     </div>
     )

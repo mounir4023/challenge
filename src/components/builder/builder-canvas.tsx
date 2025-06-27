@@ -83,11 +83,14 @@ export default function BuilderCanvas({
       const canvasRect = canvasRef.current?.getBoundingClientRect();
       if (!canvasRect) return;
 
+      const gap = 8; // Tailwind `gap-2` = 8px
+      const cellWidth = (canvasRect.width - (gap * (NUM_COLS - 1))) / NUM_COLS + gap;// fluid grid col width
+      const cellHeight = 80 + gap;// fixed grid row height
       const relX = e.clientX - canvasRect.left;
       const relY = e.clientY - canvasRect.top;
 
-      const col = Math.floor(relX / 80) + 1;
-      const row = Math.floor(relY / 80) + 1;
+      const col = Math.floor(relX / cellWidth) + 1;
+      const row = Math.floor(relY / cellHeight) + 1;
 
       const element = elements.find(el => el.id === resizeTarget?.id);
       if (!element) return;
