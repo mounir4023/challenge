@@ -71,6 +71,7 @@ export default function BuilderView({
 
     setElements(prev => [...prev, newElement])
     setSelectedComponent(null)
+    //alert(`${row}, ${col}`)
   }
 
   // Element Selection

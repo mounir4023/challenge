@@ -79,6 +79,43 @@ export default function BuilderCanvas({
   useEffect(() => {
     if (!resizeTarget) return;
 
+    function handleResizeMove(clientX: number, clientY: number) {
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (!canvasRect) return;
+
+      const relX = clientX - canvasRect.left;
+      const relY = clientY - canvasRect.top;
+
+      const gap = 8; // Tailwind `gap-2` = 8px
+      const cellWidth = (canvasRect.width - (gap * (NUM_COLS - 1))) / NUM_COLS + gap;// fluid grid col width
+      const cellHeight = 80 + gap;// fixed grid row height
+
+      const col = Math.floor(relX / cellWidth) + 1;
+      const row = Math.floor(relY / cellHeight) + 1;
+
+      const element = elements.find(el => el.id === resizeTarget?.id);
+      if (!element) return;
+
+      const newWidth = Math.max(1, col - element.x + 1);
+      const newHeight = Math.max(1, row - element.y + 1);
+
+      const valid = canPlaceElementAt(
+        element.x,
+        element.y,
+        newWidth,
+        newHeight,
+        elements.filter(e => e.id !== element.id)
+      );
+
+      setResizingPreview({
+        x: element.x,
+        y: element.y,
+        width: newWidth,
+        height: newHeight,
+        valid,
+      });
+    }
+    /*
     function onMove(e: MouseEvent) {
       const canvasRect = canvasRef.current?.getBoundingClientRect();
       if (!canvasRect) return;
@@ -133,19 +170,66 @@ export default function BuilderCanvas({
       window.removeEventListener('mousemove', onMove);
       window.removeEventListener('mouseup', onUp);
     }
+    */
 
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('mouseup', onUp);
+    function onMouseMove(e: MouseEvent) {
+      handleResizeMove(e.clientX, e.clientY);
+    }
+
+    function onMouseUp() {
+      finalizeResize();
+    }
+
+    function onTouchMove(e: TouchEvent) {
+      e.preventDefault(); // Needed when passive is false
+      const touch = e.touches[0];
+      handleResizeMove(touch.clientX, touch.clientY);
+    }
+
+    function onTouchEnd() {
+      finalizeResize();
+    }
+
+    function finalizeResize() {
+      if (resizingPreview?.valid) {
+        const element = elements.find(el => el.id === resizeTarget?.id);
+        if (element) {
+          onUpdateElement({
+            ...element,
+            width: resizingPreview.width,
+            height: resizingPreview.height,
+          });
+        }
+      }
+
+      setResizingPreview(null);
+      setResizeTarget(null);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
+    }
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    window.addEventListener('touchmove', onTouchMove, {passive: false});
+    window.addEventListener('touchend', onTouchEnd);
 
     return () => {
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+      window.addEventListener('touchmove', onTouchMove);
+      window.addEventListener('touchend', onTouchEnd);
     };
   }, [resizeTarget, resizingPreview, elements, onUpdateElement]);
 
   return (
     <div className="p-4 w-full relative overflow-y-auto">
-      <div ref={canvasRef} className="relative">
+      <div
+        ref={canvasRef}
+        className="relative"
+        //className="relative min-w-xl"
+      >
 
         {/* Interactive Grid Layer (when placing a new component) */}
         { (isPlacing || isMoving) && (
@@ -178,16 +262,30 @@ export default function BuilderCanvas({
                 <div
                   key={`${col}-${row}`}
                   className={cn(
-                    "border border-dashed border-muted",
+                    "border border-dashed border-muted h-full w-full",
                     isInteractive && !isValid && 'hover:bg-destructive hover:opacity-25 cursor-not-allowed',
                     isInteractive && isValid && 'hover:bg-accent hover:opacity-50 cursor-pointer'
                   )}
+                  onPointerDown={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (isPlacing && isValid) onAddElementAtCell(col, row)
+                    if (isMoving && isValid) onMoveElementToCell(col, row)
+                  }}
+                  /*
                   onClick={(e) => {
                     e.preventDefault()
                     e.stopPropagation()
                     if (isPlacing && isValid) onAddElementAtCell(col, row)
                     if (isMoving && isValid) onMoveElementToCell(col, row)
                   }}
+                  onTouchStart={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (isPlacing && isValid) onAddElementAtCell(col, row)
+                    if (isMoving && isValid) onMoveElementToCell(col, row)
+                  }}
+                  */
                 />
               )
             })}
@@ -270,6 +368,12 @@ export default function BuilderCanvas({
                       e.preventDefault();
                       e.stopPropagation();
                       startResizing(el, e.clientX, e.clientY);
+                    }}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      const touch = e.touches[0];
+                      startResizing(el, touch.clientX, touch.clientY);
                     }}
                   >
                     <Scaling className="size-6 text-muted"/>
